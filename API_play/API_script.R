@@ -2,6 +2,8 @@ library(httr)
 library(jsonlite)
 library(magrittr)
 library(dplyr)
+library(tidyr)
+library(tibble)
 
 
 if(Sys.info()["user"] == "dark_") {
@@ -17,7 +19,6 @@ setwd(PROJECTDIR)
 key<- paste0(getwd(), key_name) %>% 
   readLines()
 base_uri <- 'https://www.warcraftlogs.com:443/v1'
-
 
 #core function for running the api and converting the json
 run_api <- function(endpoint) {
@@ -38,25 +39,19 @@ fights_endpoint <- function(raid_id) {
 }
 
 tables_endpoint <- function(view, raid_id, start_time, end_time, ability_id){
-  x <- paste0('/report/tables/', view, raid_id, '?', 'start=', start_time, '&end=', end_time, '&')
-  
+  x <- paste0('/report/tables/', view, '/', raid_id, '?', 'start=', start_time, '&end=', end_time, '&abilityid=', ability_id, '&')
 }
 
-#The events data
-events_endpoint("htxJHQwTK3LapV2Z", '17', '17') %>% 
-  run_api()
+damage_taken_by_ability <- function(boss_name, spell_id, n_fight){
+  data <- 
+    (
+      fights_endpoint(raid_id) %>% 
+        run_api()
+    )[['fights']] %>% 
+        filter(name == boss_name)
+  x <- tables_endpoint('damage-taken', raid_id, data[n_fight, 'start_time'], data[n_fight, 'end_time'], spell_id) %>% 
+    run_api()
+}
 
 
-#The fights endpoint data
-fights_data <- 
-  fights_endpoint('htxJHQwTK3LapV2Z') %>% 
-  run_api
-
-#Purifying flame data
-boss_fight_data <- 
-  fights_data[['fights']] %>% 
-  filter(boss == '2141') 
-
-
-
-
+  

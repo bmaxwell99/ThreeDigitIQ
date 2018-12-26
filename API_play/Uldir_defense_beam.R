@@ -11,12 +11,28 @@ for(i in 1:data_length){
   hit_data[[i]] <- hit_data[[i]] %>% mutate(name = name_data[i])
 }
 
+#experiment constructing empty data frame and adding each 
+df <- data.frame(name = '', type = '',  count = '', total = '', totalReduced = '', absorbOrOverheal = '', min = '', max = '', stringsAsFactors = FALSE)
 
-df <- full_join(hit_data[[1]] %>% gather(), hit_data[[2]] %>% gather(), by = 'key')
-full_join(df, hit_data[[3]] %>% gather(), by = 'key')
 
-#this wont work. Re-explore joining
-df <- data.frame(type = '', total = '', count = '', totalReduced = '', absorbOrOverheal = '', min = '', max = '', name = '')
-df[1,] = hit_data[[1]]
-df[2,] = hit_data[[2]]
+for(i in 1:data_length) {
+  sub_data_length <- hit_data[[i]] %>% length()
+  if(sub_data_length == 7) {
+    df[i,] <-   
+      hit_data[[i]] %>%  
+      mutate(totalReduced = '') %>% 
+      select(name, type, count, total, totalReduced, absorbOrOverheal, min, max)
+  }
+  else {
+    df[i,] <- 
+      hit_data[[i]] %>% 
+      select(name, type, count, total, totalReduced, absorbOrOverheal, min, max)
+  }
+}
+
+df[1,] <-   
+  hit_data[[1]] %>%  
+  mutate(totalReduced = '') %>% 
+  select(name, type, count, total, totalReduced, absorbOrOverheal, min, max)
+
 df %>% View()
